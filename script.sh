@@ -4,4 +4,4 @@ echo "How are U"
 echo "Test"
 
 
-sudo -S docker run nginx
+docker run apache
