@@ -3,5 +3,5 @@ echo "Hello World"
 echo "How are U"
 echo "Test"
 
-sudo su
-sudo docker run nginx
+
+suso su -S docker run nginx
