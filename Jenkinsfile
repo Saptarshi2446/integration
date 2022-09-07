@@ -1,20 +1,43 @@
-node {
+pipeline {
 
-    checkout scm
+  agent any
 
-    docker.withRegistry('https://registry.hub.docker.com', 'dockerHub') {
+  stages {
 
-        def customImage = docker.build("saptarshi2446/dockerwebapp")
-
-        /* Push the container to the custom Registry */
-        customImage.push()
+    stage('Checkout Source') {
+      steps {
+        git url:'https://github.com/sachinj77/myapp1.git', branch:'master'
+      }
     }
-}
-node {        stage('Deploy to k8s'){
-            steps{
-                script{
-                    kubernetesDeploy (configs: 'deployment.yaml',kubeconfigId: 'k8sconfigpwd')
+    
+      stage("Build image") {
+            steps {
+                script {
+                    myapp = docker.build("saptarshi2446/hellowhale:${env.BUILD_ID}")
                 }
             }
         }
-     } 
+    
+      stage("Push image") {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhublogin') {
+                            myapp.push("latest")
+                            myapp.push("${env.BUILD_ID}")
+                    }
+                }
+            }
+        }
+
+    
+    stage('Deploy App') {
+      steps {
+        script {
+          kubernetesDeploy(configs: "hellowhale.yml", kubeconfigId: "kubcfg")
+        }
+      }
+    }
+
+  }
+
+}
